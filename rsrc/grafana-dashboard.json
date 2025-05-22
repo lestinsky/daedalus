@@ -73,10 +73,75 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "blue",
-            "mode": "fixed"
+            "mode": "thresholds"
           },
-          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 2,
+        "x": 0,
+        "y": 0
+      },
+      "id": 21,
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "value",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_INFLUXDB}"
+          },
+          "query": "from(bucket: \"experiment\")\r\n  |> range(start: -1m)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"pressure\" and r[\"dev\"] == \"nozzle\")\r\n  |> last()\r\n  |> drop(columns: [\"raw\"])\r\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Nozzle Pressure (bar)",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_INFLUXDB}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -92,76 +157,18 @@
             ]
           }
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"x\", dev=\"nozzle\", ldev=\"daedalus\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "X"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "red",
-                  "mode": "shades"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"y\", dev=\"nozzle\", ldev=\"daedalus\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Y"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "shades"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"z\", dev=\"nozzle\", ldev=\"daedalus\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "Z"
-              },
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "blue",
-                  "mode": "shades"
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 0,
+        "w": 2,
+        "x": 2,
         "y": 0
       },
-      "id": 22,
+      "id": 23,
       "options": {
         "colorMode": "value",
-        "graphMode": "none",
+        "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
@@ -169,7 +176,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
+          "fields": "/^species GJ$/",
           "values": false
         },
         "showPercentChange": false,
@@ -179,15 +186,15 @@
       "pluginVersion": "11.3.0",
       "targets": [
         {
-          "query": "from(bucket: \"experiment\")\r\n  |> range(start: -1m)\r\n  |> drop(columns: [\"raw\"])\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"position\" and r[\"dev\"] == \"nozzle\")\r\n",
-          "refId": "A",
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
-          }
+          },
+          "query": "from(bucket: \"experiment\")\n  |> range(start: -1m)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"density\" and r[\"dev\"] == \"GJ\" and r._field == \"species\")\n  |> last()",
+          "refId": "A"
         }
       ],
-      "title": "Nozzle position (mm)",
+      "title": "Target gas",
       "transparent": true,
       "type": "stat"
     },
@@ -229,7 +236,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
-            "spanNulls": 5000,
+            "spanNulls": 10000,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -282,7 +289,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"experiment\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temperature\" and r[\"dev\"] =~ /GJ_Coldhead/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)",
+          "query": "from(bucket: \"experiment\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temperature\" and r[\"dev\"] =~ /GJ_Coldhead/)\n  |> aggregateWindow(every: v.windowPeriod, fn: last)",
           "refId": "A"
         }
       ],
@@ -317,7 +324,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 9,
         "w": 2,
         "x": 22,
         "y": 0
@@ -347,11 +354,12 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"experiment\")\n  |> range(start: -1m)\n  |> last()\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temperature\" and r[\"dev\"] =~ /GJ_Coldhead/)",
+          "query": "from(bucket: \"experiment\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temperature\" and r[\"dev\"] =~ /GJ_Coldhead/)\n  |> last()",
           "refId": "A"
         }
       ],
       "title": "Temp (K)",
+      "transparent": true,
       "type": "stat"
     },
     {
@@ -362,8 +370,11 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "blue",
+            "mode": "fixed"
           },
+          "displayName": "${__field.labels.ch}",
+          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -377,8 +388,7 @@
                 "value": 80
               }
             ]
-          },
-          "unit": "none"
+          }
         },
         "overrides": []
       },
@@ -388,10 +398,10 @@
         "x": 0,
         "y": 4
       },
-      "id": 21,
+      "id": 22,
       "options": {
-        "colorMode": "none",
-        "graphMode": "area",
+        "colorMode": "value",
+        "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
@@ -403,44 +413,23 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "value",
+        "textMode": "auto",
         "wideLayout": true
       },
       "pluginVersion": "11.3.0",
       "targets": [
         {
+          "query": "from(bucket: \"experiment\")\r\n  |> range(start: -1m)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"position\" and r[\"dev\"] == \"nozzle\")\r\n  |> last()\r\n  |> drop(columns: [\"raw\"])\r\n  \r\n",
+          "refId": "A",
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
-          },
-          "query": "from(bucket: \"experiment\")\r\n  |> range(start: -1m)\r\n  |> drop(columns: [\"raw\"])\r\n  |> last()\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"pressure\" and r[\"dev\"] == \"nozzle\")\r\n",
-          "refId": "A"
+          }
         }
       ],
-      "title": "Gas Pressure (bar)",
-      "type": "stat"
-    },
-    {
-      "description": "Gasjet control",
-      "gridPos": {
-        "h": 8,
-        "w": 2,
-        "x": 22,
-        "y": 6
-      },
-      "id": 18,
-      "options": {
-        "code": {
-          "language": "plaintext",
-          "showLineNumbers": false,
-          "showMiniMap": false
-        },
-        "content": "<h2>Daedalus</h2>\n<p>\n<img src=\"https://raw.githubusercontent.com/xaratustrah/daedalus/refs/heads/main/rsrc/daedalus.jpg\" />\n</p>\n<p>\nProject on <a href=\"https://github.com/xaratustrah/daedalus/\">GitHub</a>\n</p>",
-        "mode": "markdown"
-      },
-      "pluginVersion": "11.3.0",
+      "title": "Nozzle position (mm)",
       "transparent": true,
-      "type": "text"
+      "type": "stat"
     },
     {
       "datasource": {
@@ -453,6 +442,7 @@
             "mode": "thresholds"
           },
           "decimals": 2,
+          "displayName": "${__field.labels.dev}",
           "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
@@ -474,59 +464,10 @@
           },
           "unit": "sci"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"1\", dev=\"GJ_E1\", ldev=\"gj_maxigauge\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "E1"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {dev=\"GJ_E4\", ldev=\"YR09VM2G\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "E4"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"2\", dev=\"GJ_E2\", ldev=\"gj_maxigauge\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "E2"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"3\", dev=\"GJ_E3\", ldev=\"gj_maxigauge\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "E3"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 7,
         "w": 4,
         "x": 0,
         "y": 8
@@ -556,7 +497,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"experiment\")\n  |> range(start: -1m)\n  |> last()\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vacuum\" and r[\"dev\"] =~ /GJ_E/)",
+          "query": "from(bucket: \"experiment\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vacuum\" and r[\"dev\"] =~ /GJ_E/)\n  |> last()",
           "refId": "A"
         }
       ],
@@ -606,7 +547,7 @@
               "type": "symlog"
             },
             "showPoints": "auto",
-            "spanNulls": 5000,
+            "spanNulls": 10000,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -676,7 +617,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"experiment\")\n|> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n|> filter(fn: (r) => r[\"_measurement\"] == \"density\" and r[\"dev\"] == \"GJ\")\n|> aggregateWindow(every: v.windowPeriod, fn: mean)",
+          "query": "from(bucket: \"experiment\")\n|> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n|> filter(fn: (r) => r[\"_measurement\"] == \"density\" and r[\"dev\"] == \"GJ\")\n|> aggregateWindow(every: v.windowPeriod, fn: last)",
           "refId": "A"
         }
       ],
@@ -732,7 +673,7 @@
         "h": 4,
         "w": 2,
         "x": 22,
-        "y": 14
+        "y": 9
       },
       "id": 10,
       "options": {
@@ -759,7 +700,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"experiment\")\n|> range(start: -1m)\n|> last()\n|> filter(fn: (r) => r[\"_measurement\"] == \"density\" and r[\"dev\"] == \"GJ\")",
+          "query": "from(bucket: \"experiment\")\n|> range(start: -5m)\n|> filter(fn: (r) => r[\"_measurement\"] == \"density\" and r[\"dev\"] == \"GJ\")\n|> last()",
           "refId": "A"
         }
       ],
@@ -779,7 +720,30 @@
           }
         }
       ],
+      "transparent": true,
       "type": "stat"
+    },
+    {
+      "description": "Gasjet control",
+      "gridPos": {
+        "h": 6,
+        "w": 2,
+        "x": 22,
+        "y": 13
+      },
+      "id": 18,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "<h2>Daedalus</h2>\n<p>\n<img src=\"https://raw.githubusercontent.com/xaratustrah/daedalus/refs/heads/main/rsrc/daedalus.jpg\" />\n</p>\n<p>\nProject on <a href=\"https://github.com/xaratustrah/daedalus/\">GitHub</a>\n</p>",
+        "mode": "markdown"
+      },
+      "pluginVersion": "11.3.0",
+      "transparent": true,
+      "type": "text"
     },
     {
       "datasource": {
@@ -791,18 +755,20 @@
           "color": {
             "mode": "thresholds"
           },
+          "displayName": "${__field.labels.type}",
+          "fieldMinMax": false,
           "mappings": [
             {
               "options": {
                 "false": {
-                  "color": "red",
+                  "color": "light-green",
                   "index": 0,
-                  "text": "Jet off"
+                  "text": "Out"
                 },
                 "true": {
-                  "color": "green",
+                  "color": "dark-red",
                   "index": 1,
-                  "text": "Jet on"
+                  "text": "In"
                 }
               },
               "type": "value"
@@ -822,28 +788,27 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 5,
         "w": 2,
         "x": 0,
-        "y": 16
+        "y": 15
       },
       "id": 17,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "auto",
-        "orientation": "auto",
+        "orientation": "horizontal",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^value \\{ch=\"0\", dev=\"nozzle\", ldev=\"daedalus\"\\}$/",
+          "fields": "/.*/",
           "values": false
         },
         "showPercentChange": false,
-        "text": {},
-        "textMode": "auto",
+        "textMode": "value_and_name",
         "wideLayout": true
       },
       "pluginVersion": "11.3.0",
@@ -853,7 +818,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"experiment\")\n|> range(start: -1m)\n|> last()\n|> filter(fn: (r) => r[\"_measurement\"] == \"shutter\" and r[\"dev\"] == \"nozzle\")",
+          "query": "from(bucket: \"experiment\")\n|> range(start: -5m)\n|> filter(fn: (r) => r[\"_measurement\"] == \"shutter\" and r[\"dev\"] == \"nozzle\")\n|> last()\n|> sort (columns:[\"type\"], desc: false)\n|> drop(columns:[\"_time\"])",
           "refId": "A"
         }
       ],
@@ -902,10 +867,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 5,
         "w": 2,
         "x": 2,
-        "y": 16
+        "y": 15
       },
       "id": 12,
       "options": {
@@ -932,7 +897,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"experiment\")\n  |> range(start: -5m)\n  |> last()\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vacuum\" and r[\"dev\"] == \"${Ring_gauge}\")",
+          "query": "from(bucket: \"experiment\")\n  |> range(start: -5m)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vacuum\" and r[\"dev\"] == \"${Ring_gauge}\")\n  |> last()",
           "refId": "A"
         }
       ],
@@ -979,7 +944,7 @@
               "type": "log"
             },
             "showPoints": "auto",
-            "spanNulls": 5000,
+            "spanNulls": 10000,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -989,6 +954,7 @@
             }
           },
           "decimals": 1,
+          "displayName": "${__field.labels.dev}",
           "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
@@ -1006,56 +972,7 @@
           },
           "unit": "sci"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"1\", dev=\"GJ_E1\", ldev=\"gj_maxigauge\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "E1"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"2\", dev=\"GJ_E2\", ldev=\"gj_maxigauge\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "E2"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"3\", dev=\"GJ_E3\", ldev=\"gj_maxigauge\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "E3"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {dev=\"GJ_E4\", ldev=\"YR09VM2G\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "E4"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 9,
@@ -1083,7 +1000,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"experiment\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vacuum\" and r[\"dev\"]=~ /GJ_E/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)",
+          "query": "from(bucket: \"experiment\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vacuum\" and r[\"dev\"]=~ /GJ_E/)\n  |> aggregateWindow(every: v.windowPeriod, fn: last)",
           "refId": "A"
         }
       ],
@@ -1125,7 +1042,7 @@
               "type": "log"
             },
             "showPoints": "auto",
-            "spanNulls": 5000,
+            "spanNulls": 10000,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -1135,6 +1052,7 @@
             }
           },
           "decimals": 1,
+          "displayName": "${__field.labels.dev}",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1151,56 +1069,7 @@
           },
           "unit": "sci"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"6\", dev=\"GJ_S3\", ldev=\"gj_maxigauge\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "S3"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"5\", dev=\"GJ_S2\", ldev=\"gj_maxigauge\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "S2"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"4\", dev=\"GJ_S1\", ldev=\"gj_maxigauge\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "S1"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {dev=\"GJ_S4\", ldev=\"YR09VM1G\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "S4"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 9,
@@ -1228,7 +1097,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"experiment\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vacuum\" and r[\"dev\"]=~ /GJ_S/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)",
+          "query": "from(bucket: \"experiment\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vacuum\" and r[\"dev\"]=~ /GJ_S/)\n  |> aggregateWindow(every: v.windowPeriod, fn: last)",
           "refId": "A"
         }
       ],
@@ -1246,6 +1115,7 @@
             "mode": "thresholds"
           },
           "decimals": 2,
+          "displayName": "${__field.labels.dev}",
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1262,62 +1132,13 @@
           },
           "unit": "sci"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"4\", dev=\"GJ_S1\", ldev=\"gj_maxigauge\", name=\"vacuum\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "S1"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"5\", dev=\"GJ_S2\", ldev=\"gj_maxigauge\", name=\"vacuum\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "S2"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {ch=\"6\", dev=\"GJ_S3\", ldev=\"gj_maxigauge\", name=\"vacuum\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "S3"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "value {dev=\"GJ_S4\", ldev=\"YR09VM1G\", name=\"vacuum\"}"
-            },
-            "properties": [
-              {
-                "id": "displayName",
-                "value": "S4"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 7,
         "w": 4,
         "x": 0,
-        "y": 19
+        "y": 20
       },
       "id": 20,
       "options": {
@@ -1344,7 +1165,7 @@
             "type": "influxdb",
             "uid": "${DS_INFLUXDB}"
           },
-          "query": "from(bucket: \"experiment\")\n  |> range(start: -1m)\n  |> last()\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vacuum\" and r[\"dev\"] =~ /GJ_S/)\n  |> sort(columns: [\"dev\"], desc:true)",
+          "query": "from(bucket: \"experiment\")\n  |> range(start: -1m)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"vacuum\" and r[\"dev\"] =~ /GJ_S/)\n  |> last()\n  |> drop(columns: [\"ch\"])\n  |> sort(columns: [\"dev\"], desc:true)",
           "refId": "A"
         }
       ],
@@ -1382,8 +1203,8 @@
     "list": [
       {
         "current": {
-          "text": "YR09_CARME",
-          "value": "YR09_CARME"
+          "text": "YR09VM1G",
+          "value": "YR09VM1G"
         },
         "includeAll": false,
         "name": "Ring_gauge",
@@ -1394,12 +1215,12 @@
             "value": "YR09_Etarget"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "YR09_CARME",
             "value": "YR09_CARME"
           },
           {
-            "selected": false,
+            "selected": true,
             "text": "YR09VM1G",
             "value": "YR09VM1G"
           },
@@ -1415,7 +1236,7 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-5m",
     "to": "now"
   },
   "timepicker": {
@@ -1428,8 +1249,8 @@
     ]
   },
   "timezone": "",
-  "title": "Daedalus",
+  "title": "Daedalus gas-jet",
   "uid": "bea9z7veo85xca",
-  "version": 28,
+  "version": 51,
   "weekStart": ""
 }
